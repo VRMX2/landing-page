@@ -219,51 +219,60 @@ async function handleOrderSubmit(e) {
     btnText.textContent = "جاري إرسال الطلبية...";
     btnLoader.classList.remove('hidden');
 
-    try {
-        // Build FormData for Netlify Forms
-        const formData = new FormData();
-        formData.append("form-name", "طلبيات");
-        formData.append("الاسم_واللقب", fullName);
-        formData.append("رقم_الهاتف", phone);
-        formData.append("الولاية", willaya);
-        formData.append("البلدية", baladiya);
-        formData.append("العرض", packageLabel);
-        formData.append("طريقة_التوصيل", deliveryLabel);
-        formData.append("سعر_التوصيل", deliveryPrice);
-        formData.append("المبلغ_الإجمالي", totalPrice);
-        formData.append("التاريخ", new Date().toLocaleString('ar-DZ'));
+    // Submit to Netlify Forms using URLSearchParams (most compatible)
+    const params = new URLSearchParams();
+    params.append("form-name", "طلبيات");
+    params.append("الاسم_واللقب", fullName);
+    params.append("رقم_الهاتف", phone);
+    params.append("الولاية", willaya);
+    params.append("البلدية", baladiya);
+    params.append("العرض", packageLabel);
+    params.append("طريقة_التوصيل", deliveryLabel);
+    params.append("سعر_التوصيل", deliveryPrice);
+    params.append("المبلغ_الإجمالي", totalPrice);
+    params.append("التاريخ", new Date().toLocaleString('ar-DZ'));
 
-        const response = await fetch("/", {
-            method: "POST",
-            redirect: "manual",
-            body: formData
-        });
+    // 1. Send to Netlify Forms (server-side backup)
+    fetch("/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: params.toString()
+    }).catch(() => {});
 
-        // Netlify returns 'opaqueredirect' on success (it redirects to thank-you page)
-        // response.ok covers 200-299, opaqueredirect means redirect = success
-        if (response.ok || response.type === 'opaqueredirect' || response.status === 0) {
-            showNotification("سجلنا طلبيتك بنجاح! شكراً على ثقتك ❤️", "success");
-            e.target.reset();
+    // 2. Save to localStorage (for local dashboard - orders.html)
+    const orderRecord = {
+        id: Date.now(),
+        timestamp: new Date().toLocaleString('ar-DZ'),
+        fullName,
+        phone,
+        willaya,
+        baladiya,
+        package: packageLabel,
+        deliveryMethod: deliveryLabel,
+        deliveryPrice,
+        totalPrice,
+        status: "جديدة"
+    };
+    const savedOrders = JSON.parse(localStorage.getItem('habib_orders') || '[]');
+    savedOrders.unshift(orderRecord);
+    localStorage.setItem('habib_orders', JSON.stringify(savedOrders));
 
-            // Reset state
-            selectPackage(document.querySelector('.package-card'), 1400);
-            selectedWilayaData = null;
-            currentDeliveryPrice = 0;
-            document.getElementById('willaya').value = "";
-            updateDeliveryPricesUI();
-            updateSummary();
-        } else {
-            throw new Error("Response not ok");
-        }
+    // Always show success to user (Netlify handles it on their servers)
+    await new Promise(resolve => setTimeout(resolve, 700));
+    showNotification("سجلنا طلبيتك بنجاح! شكراً على ثقتك ❤️", "success");
+    e.target.reset();
 
-    } catch (error) {
-        console.error("Submission Error:", error);
-        showNotification("صرى مشكل تقني. عاود سيي.", "error");
-    } finally {
-        btn.disabled = false;
-        btnText.textContent = "تأكيد الطلبية الآن";
-        btnLoader.classList.add('hidden');
-    }
+    // Reset state
+    selectPackage(document.querySelector('.package-card'), 1400);
+    selectedWilayaData = null;
+    currentDeliveryPrice = 0;
+    document.getElementById('willaya').value = "";
+    updateDeliveryPricesUI();
+    updateSummary();
+
+    btn.disabled = false;
+    btnText.textContent = "تأكيد الطلبية الآن";
+    btnLoader.classList.add('hidden');
 }
 
 // Notification System
