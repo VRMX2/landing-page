@@ -235,10 +235,13 @@ async function handleOrderSubmit(e) {
 
         const response = await fetch("/", {
             method: "POST",
+            redirect: "manual",
             body: formData
         });
 
-        if (response.ok) {
+        // Netlify returns 'opaqueredirect' on success (it redirects to thank-you page)
+        // response.ok covers 200-299, opaqueredirect means redirect = success
+        if (response.ok || response.type === 'opaqueredirect' || response.status === 0) {
             showNotification("سجلنا طلبيتك بنجاح! شكراً على ثقتك ❤️", "success");
             e.target.reset();
 
