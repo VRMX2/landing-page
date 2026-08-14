@@ -48,6 +48,15 @@
         .btn-outline:hover { background: rgba(255,255,255,0.05); }
         .btn-danger { background: rgba(255,76,76,0.15); border: 1px solid var(--error); color: var(--error); }
         .btn-danger:hover { background: rgba(255,76,76,0.25); }
+        .btn-blue { background: rgba(33,150,243,0.15); border: 1px solid #2196F3; color: #2196F3; }
+        .btn-blue:hover { background: rgba(33,150,243,0.25); }
+        .btn { padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 0.95rem; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+        .btn-gold { background: linear-gradient(135deg, var(--gold-light), var(--gold)); color: #111; }
+        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,175,55,0.3); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+        .btn-outline:hover { background: rgba(255,255,255,0.05); }
+        .btn-danger { background: rgba(255,76,76,0.15); border: 1px solid var(--error); color: var(--error); }
+        .btn-danger:hover { background: rgba(255,76,76,0.25); }
 
         /* Stats */
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; padding: 2rem; }
@@ -127,6 +136,10 @@
 <div class="header">
     <div class="header-logo">حبيب <span>الزوالي</span> | لوح التحكم</div>
     <div class="header-actions">
+        <button class="btn btn-blue" onclick="openSettings()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            ربط Netlify
+        </button>
         <button class="btn btn-outline" onclick="window.open('index.html','_blank')">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             الموقع
@@ -159,7 +172,10 @@
 
 <div class="table-section">
     <div class="table-header">
-        <span class="table-title">قائمة الطلبيات</span>
+        <div>
+            <span class="table-title">قائمة الطلبيات</span>
+            <span id="syncStatus" style="font-size:0.8rem; color:var(--muted); margin-right:1rem;">(بيانات محلية)</span>
+        </div>
         <button class="btn btn-danger" onclick="clearAll()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
             حذف الكل
@@ -205,14 +221,97 @@
     </div>
 </div>
 
+<!-- Netlify Settings Modal -->
+<div class="modal-overlay" id="settingsModal">
+    <div class="modal">
+        <h3>ربط لوح التحكم بـ Netlify (للهاتف)</h3>
+        <p style="color:var(--muted); font-size:0.9rem; margin-bottom:1rem; line-height:1.6;">باش تشوف الطلبيات في هاتفك، لازم تربط اللوحة مع Netlify بـ Site ID و Personal Access Token. (تحتاج ديرها مرة وحدة برك في الهاتف)</p>
+        
+        <div style="margin-bottom: 1rem;">
+            <label style="display:block; margin-bottom:5px; font-size:0.9rem;">Netlify Site ID</label>
+            <input type="text" id="netlifySiteId" style="width:100%; padding:10px; background:var(--bg); border:1px solid var(--border); color:white; border-radius:8px;" placeholder="مثال: a1b2c3d4-...">
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display:block; margin-bottom:5px; font-size:0.9rem;">Personal Access Token</label>
+            <input type="password" id="netlifyToken" style="width:100%; padding:10px; background:var(--bg); border:1px solid var(--border); color:white; border-radius:8px;" placeholder="nfp_...">
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-blue" onclick="saveSettings()">💾 حفظ ومزامنة</button>
+            <button class="btn btn-outline" onclick="closeSettings()">إلغاء</button>
+        </div>
+    </div>
+</div>
+
 <div class="notif" id="notif"></div>
 
 <script>
 let orders = [];
 let currentOrderId = null;
+let isLoading = false;
 
-function loadOrders() {
-    orders = JSON.parse(localStorage.getItem('habib_orders') || '[]');
+async function loadOrders() {
+    if(isLoading) return;
+    
+    const siteId = localStorage.getItem('netlify_site_id');
+    const token = localStorage.getItem('netlify_token');
+
+    if (siteId && token) {
+        // Fetch from Netlify API
+        isLoading = true;
+        document.getElementById('syncStatus').textContent = "🔄 جاري المزامنة مع Netlify...";
+        
+        try {
+            // 1. Get forms for site
+            const formsRes = await fetch(`https://api.netlify.com/api/v1/sites/${siteId}/forms`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if(!formsRes.ok) throw new Error("بيانات الربط غالطة");
+            const forms = await formsRes.json();
+            const targetForm = forms.find(f => f.name === 'طلبيات');
+            
+            if (targetForm) {
+                // 2. Get submissions
+                const subsRes = await fetch(`https://api.netlify.com/api/v1/forms/${targetForm.id}/submissions`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const submissions = await subsRes.json();
+                
+                // Parse submissions to our format
+                orders = submissions.map(sub => {
+                    const d = sub.data;
+                    return {
+                        id: sub.id,
+                        timestamp: d['التاريخ'] || new Date(sub.created_at).toLocaleString('ar-DZ'),
+                        fullName: d['الاسم_واللقب'] || '',
+                        phone: d['رقم_الهاتف'] || '',
+                        willaya: d['الولاية'] || '',
+                        baladiya: d['البلدية'] || '',
+                        package: d['العرض'] || '',
+                        deliveryMethod: d['طريقة_التوصيل'] || '',
+                        deliveryPrice: d['سعر_التوصيل'] || '',
+                        totalPrice: d['المبلغ_الإجمالي'] || '',
+                        status: localStorage.getItem(`status_${sub.id}`) || 'جديدة'
+                    };
+                });
+                document.getElementById('syncStatus').textContent = "🟢 متصل بـ Netlify";
+            } else {
+                throw new Error("لم يتم العثور على فورم 'طلبيات'");
+            }
+        } catch(err) {
+            console.error(err);
+            document.getElementById('syncStatus').textContent = "🔴 خطأ في الإتصال";
+            // Fallback to local
+            orders = JSON.parse(localStorage.getItem('habib_orders') || '[]');
+        }
+        isLoading = false;
+    } else {
+        // Fetch from LocalStorage only
+        orders = JSON.parse(localStorage.getItem('habib_orders') || '[]');
+        document.getElementById('syncStatus').textContent = "(بيانات محلية فقط)";
+    }
+    
     renderTable();
     renderStats();
 }
@@ -303,7 +402,15 @@ function closeModal() {
 
 function changeStatus(id, newStatus) {
     orders = orders.map(o => o.id === id ? {...o, status: newStatus} : o);
-    localStorage.setItem('habib_orders', JSON.stringify(orders));
+    
+    // Save status locally (works for both local and Netlify modes)
+    localStorage.setItem(`status_${id}`, newStatus);
+    
+    // Also update local orders array if using local mode
+    const localOrders = JSON.parse(localStorage.getItem('habib_orders') || '[]');
+    const updatedLocal = localOrders.map(o => o.id === id ? {...o, status: newStatus} : o);
+    localStorage.setItem('habib_orders', JSON.stringify(updatedLocal));
+
     renderTable();
     renderStats();
     closeModal();
@@ -352,9 +459,40 @@ function showNotif(msg, type) {
     setTimeout(() => el.classList.remove('show'), 3000);
 }
 
-// Close modal on overlay click
+// Settings Modal Logic
+function openSettings() {
+    document.getElementById('netlifySiteId').value = localStorage.getItem('netlify_site_id') || '';
+    document.getElementById('netlifyToken').value = localStorage.getItem('netlify_token') || '';
+    document.getElementById('settingsModal').classList.add('open');
+}
+
+function closeSettings() {
+    document.getElementById('settingsModal').classList.remove('open');
+}
+
+function saveSettings() {
+    const siteId = document.getElementById('netlifySiteId').value.trim();
+    const token = document.getElementById('netlifyToken').value.trim();
+    
+    if(siteId && token) {
+        localStorage.setItem('netlify_site_id', siteId);
+        localStorage.setItem('netlify_token', token);
+        showNotif("تم حفظ إعدادات Netlify", "success");
+    } else {
+        localStorage.removeItem('netlify_site_id');
+        localStorage.removeItem('netlify_token');
+        showNotif("تم مسح الإعدادات. سيتم عرض الطلبيات المحلية فقط.", "warning");
+    }
+    closeSettings();
+    loadOrders();
+}
+
+// Close modals on overlay click
 document.getElementById('detailModal').addEventListener('click', function(e) {
     if (e.target === this) closeModal();
+});
+document.getElementById('settingsModal').addEventListener('click', function(e) {
+    if (e.target === this) closeSettings();
 });
 
 // Load on start
