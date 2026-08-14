@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوح التحكم | حبيب الزوالي</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080808;
+            --surface: #111;
+            --card: rgba(20,20,20,0.9);
+            --gold: #D4AF37;
+            --gold-light: #F9E596;
+            --text: #F5F5F5;
+            --muted: #888;
+            --border: rgba(255,255,255,0.08);
+            --success: #00E676;
+            --error: #FF4C4C;
+            --warning: #FFA726;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; }
+
+        /* Header */
+        .header {
+            background: rgba(5,5,5,0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1.2rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        .header-logo { font-size: 1.5rem; font-weight: 800; }
+        .header-logo span { color: var(--gold); }
+        .header-actions { display: flex; gap: 1rem; }
+
+        /* Buttons */
+        .btn { padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 0.95rem; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+        .btn-gold { background: linear-gradient(135deg, var(--gold-light), var(--gold)); color: #111; }
+        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,175,55,0.3); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+        .btn-outline:hover { background: rgba(255,255,255,0.05); }
+        .btn-danger { background: rgba(255,76,76,0.15); border: 1px solid var(--error); color: var(--error); }
+        .btn-danger:hover { background: rgba(255,76,76,0.25); }
+
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; padding: 2rem; }
+        @media(max-width: 700px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .stat-number { font-size: 2.5rem; font-weight: 800; color: var(--gold); }
+        .stat-label { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+
+        /* Table */
+        .table-section { padding: 0 2rem 2rem; }
+        .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem; }
+        .table-title { font-size: 1.3rem; font-weight: 700; }
+        
+        .table-wrapper {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            overflow-x: auto;
+        }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        thead { background: rgba(212,175,55,0.08); }
+        th { padding: 1rem 1.2rem; text-align: right; font-size: 0.9rem; color: var(--gold); font-weight: 700; border-bottom: 1px solid var(--border); white-space: nowrap; }
+        td { padding: 1rem 1.2rem; font-size: 0.95rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        .badge-new { background: rgba(0,230,118,0.15); color: var(--success); border: 1px solid rgba(0,230,118,0.3); }
+        .badge-done { background: rgba(212,175,55,0.15); color: var(--gold); border: 1px solid rgba(212,175,55,0.3); }
+        .badge-cancel { background: rgba(255,76,76,0.15); color: var(--error); border: 1px solid rgba(255,76,76,0.3); }
+
+        .phone-link { color: var(--gold-light); text-decoration: none; direction: ltr; display: inline-block; }
+        .phone-link:hover { text-decoration: underline; }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--muted);
+        }
+        .empty-state .empty-icon { font-size: 4rem; margin-bottom: 1rem; }
+        .empty-state h3 { font-size: 1.3rem; margin-bottom: 0.5rem; color: var(--text); }
+
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; }
+        .modal-overlay.open { display: flex; }
+        .modal { background: #151515; border: 1px solid var(--border); border-radius: 20px; padding: 2rem; max-width: 500px; width: 90%; }
+        .modal h3 { margin-bottom: 1.5rem; font-size: 1.2rem; color: var(--gold-light); }
+        .modal-row { display: flex; justify-content: space-between; margin-bottom: 0.8rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+        .modal-row:last-of-type { border-bottom: none; }
+        .modal-row span:first-child { color: var(--muted); }
+        .modal-row span:last-child { font-weight: 600; }
+        .modal-footer { display: flex; gap: 1rem; margin-top: 1.5rem; }
+        .modal-footer .btn { flex: 1; justify-content: center; }
+
+        /* Notification */
+        .notif { position: fixed; bottom: 20px; right: 20px; padding: 14px 20px; border-radius: 12px; font-weight: 700; transform: translateX(150%); transition: transform 0.3s; z-index: 999; }
+        .notif.show { transform: translateX(0); }
+        .notif.success { background: var(--success); color: #111; }
+        .notif.error { background: var(--error); color: white; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-logo">حبيب <span>الزوالي</span> | لوح التحكم</div>
+    <div class="header-actions">
+        <button class="btn btn-outline" onclick="window.open('index.html','_blank')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            الموقع
+        </button>
+        <button class="btn btn-gold" onclick="exportCSV()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            تصدير Excel
+        </button>
+    </div>
+</div>
+
+<div class="stats-grid" id="statsGrid">
+    <div class="stat-card">
+        <div class="stat-number" id="totalOrders">0</div>
+        <div class="stat-label">إجمالي الطلبيات</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number" id="newOrders">0</div>
+        <div class="stat-label">طلبيات جديدة</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number" id="totalRevenue" style="font-size:1.8rem">0 دج</div>
+        <div class="stat-label">الإجمالي المتوقع</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number" id="todayOrders">0</div>
+        <div class="stat-label">طلبيات اليوم</div>
+    </div>
+</div>
+
+<div class="table-section">
+    <div class="table-header">
+        <span class="table-title">قائمة الطلبيات</span>
+        <button class="btn btn-danger" onclick="clearAll()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+            حذف الكل
+        </button>
+    </div>
+    <div class="table-wrapper">
+        <table id="ordersTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>التاريخ والوقت</th>
+                    <th>الاسم واللقب</th>
+                    <th>الهاتف</th>
+                    <th>الولاية</th>
+                    <th>البلدية</th>
+                    <th>العرض</th>
+                    <th>التوصيل</th>
+                    <th>الإجمالي</th>
+                    <th>الحالة</th>
+                    <th>إجراء</th>
+                </tr>
+            </thead>
+            <tbody id="ordersBody">
+            </tbody>
+        </table>
+        <div id="emptyState" class="empty-state hidden">
+            <div class="empty-icon">📋</div>
+            <h3>ما كاش طلبيات بعد</h3>
+            <p>كي يدير الزبائن طلبيات، راح تبانوا هنا.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="detailModal">
+    <div class="modal">
+        <h3>تفاصيل الطلبية</h3>
+        <div id="modalContent"></div>
+        <div class="modal-footer">
+            <button class="btn btn-gold" id="markDoneBtn">✅ تحديد كمنجزة</button>
+            <button class="btn btn-outline" onclick="closeModal()">إغلاق</button>
+        </div>
+    </div>
+</div>
+
+<div class="notif" id="notif"></div>
+
+<script>
+let orders = [];
+let currentOrderId = null;
+
+function loadOrders() {
+    orders = JSON.parse(localStorage.getItem('habib_orders') || '[]');
+    renderTable();
+    renderStats();
+}
+
+function renderStats() {
+    const today = new Date().toLocaleDateString('ar-DZ');
+    const todayCount = orders.filter(o => o.timestamp && o.timestamp.includes(new Date().toLocaleDateString('ar-DZ'))).length;
+    const newCount = orders.filter(o => o.status === 'جديدة').length;
+    
+    let totalRevenue = 0;
+    orders.forEach(o => {
+        const match = o.totalPrice ? o.totalPrice.match(/(\d+)/) : null;
+        if (match) totalRevenue += parseInt(match[1]);
+    });
+
+    document.getElementById('totalOrders').textContent = orders.length;
+    document.getElementById('newOrders').textContent = newCount;
+    document.getElementById('totalRevenue').textContent = totalRevenue.toLocaleString() + ' دج';
+    document.getElementById('todayOrders').textContent = todayCount;
+}
+
+function renderTable() {
+    const tbody = document.getElementById('ordersBody');
+    const empty = document.getElementById('emptyState');
+
+    if (orders.length === 0) {
+        tbody.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+    }
+    empty.classList.add('hidden');
+
+    tbody.innerHTML = orders.map((o, i) => {
+        const statusBadge = o.status === 'جديدة'
+            ? '<span class="badge badge-new">جديدة</span>'
+            : o.status === 'منجزة'
+            ? '<span class="badge badge-done">منجزة</span>'
+            : '<span class="badge badge-cancel">ملغاة</span>';
+
+        return `
+        <tr>
+            <td>${orders.length - i}</td>
+            <td style="font-size:0.85rem;color:var(--muted)">${o.timestamp}</td>
+            <td><strong>${o.fullName}</strong></td>
+            <td><a href="tel:${o.phone}" class="phone-link">${o.phone}</a></td>
+            <td>${o.willaya}</td>
+            <td>${o.baladiya}</td>
+            <td style="font-size:0.85rem">${o.package}</td>
+            <td style="font-size:0.85rem">${o.deliveryMethod}</td>
+            <td><strong style="color:var(--gold)">${o.totalPrice}</strong></td>
+            <td>${statusBadge}</td>
+            <td><button class="btn btn-outline" style="padding:6px 14px;font-size:0.85rem" onclick="openModal(${o.id})">تفاصيل</button></td>
+        </tr>`;
+    }).join('');
+}
+
+function openModal(id) {
+    currentOrderId = id;
+    const o = orders.find(x => x.id === id);
+    if (!o) return;
+
+    document.getElementById('modalContent').innerHTML = `
+        <div class="modal-row"><span>الاسم واللقب</span><span>${o.fullName}</span></div>
+        <div class="modal-row"><span>الهاتف</span><span><a href="tel:${o.phone}" class="phone-link">${o.phone}</a></span></div>
+        <div class="modal-row"><span>الولاية</span><span>${o.willaya}</span></div>
+        <div class="modal-row"><span>البلدية</span><span>${o.baladiya}</span></div>
+        <div class="modal-row"><span>العرض</span><span>${o.package}</span></div>
+        <div class="modal-row"><span>التوصيل</span><span>${o.deliveryMethod} — ${o.deliveryPrice}</span></div>
+        <div class="modal-row"><span>الإجمالي</span><span style="color:var(--gold);font-size:1.2rem">${o.totalPrice}</span></div>
+        <div class="modal-row"><span>التاريخ</span><span>${o.timestamp}</span></div>
+    `;
+
+    const btn = document.getElementById('markDoneBtn');
+    if (o.status === 'منجزة') {
+        btn.textContent = '↩️ إعادة لجديدة';
+        btn.onclick = () => changeStatus(id, 'جديدة');
+    } else {
+        btn.textContent = '✅ تحديد كمنجزة';
+        btn.onclick = () => changeStatus(id, 'منجزة');
+    }
+
+    document.getElementById('detailModal').classList.add('open');
+}
+
+function closeModal() {
+    document.getElementById('detailModal').classList.remove('open');
+}
+
+function changeStatus(id, newStatus) {
+    orders = orders.map(o => o.id === id ? {...o, status: newStatus} : o);
+    localStorage.setItem('habib_orders', JSON.stringify(orders));
+    renderTable();
+    renderStats();
+    closeModal();
+    showNotif(newStatus === 'منجزة' ? 'تم تحديد الطلبية كمنجزة ✅' : 'تم إعادة الطلبية لجديدة', 'success');
+}
+
+function clearAll() {
+    if (!confirm('واش راك متأكد بلي تحذف كامل الطلبيات؟')) return;
+    localStorage.removeItem('habib_orders');
+    loadOrders();
+    showNotif('تم حذف كل الطلبيات', 'error');
+}
+
+function exportCSV() {
+    if (orders.length === 0) { showNotif('ما كاش طلبيات تصدرهم', 'error'); return; }
+
+    const headers = ['#', 'التاريخ', 'الاسم واللقب', 'الهاتف', 'الولاية', 'البلدية', 'العرض', 'التوصيل', 'سعر التوصيل', 'الإجمالي', 'الحالة'];
+    const rows = orders.map((o, i) => [
+        orders.length - i,
+        o.timestamp,
+        o.fullName,
+        o.phone,
+        o.willaya,
+        o.baladiya,
+        o.package,
+        o.deliveryMethod,
+        o.deliveryPrice,
+        o.totalPrice,
+        o.status
+    ].map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(','));
+
+    const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `طلبيات_حبيب_الزوالي_${new Date().toLocaleDateString('ar-DZ').replace(/\//g,'-')}.csv`;
+    a.click();
+    showNotif('تم تصدير الطلبيات بنجاح 📥', 'success');
+}
+
+function showNotif(msg, type) {
+    const el = document.getElementById('notif');
+    el.textContent = msg;
+    el.className = `notif ${type} show`;
+    setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// Close modal on overlay click
+document.getElementById('detailModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+
+// Load on start
+loadOrders();
+
+// Auto-refresh every 5 seconds
+setInterval(loadOrders, 5000);
+</script>
+
+</body>
+</html>

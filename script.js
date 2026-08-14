@@ -179,7 +179,7 @@ function updateSummary() {
     }
 }
 
-// Form Submission & API call
+// Form Submission - Save to localStorage
 async function handleOrderSubmit(e) {
     e.preventDefault();
 
@@ -194,19 +194,22 @@ async function handleOrderSubmit(e) {
 
     // Get form data
     const formData = {
-        timestamp: new Date().toISOString(),
-        package: document.querySelector('input[name="package"]:checked').value === "1" ? "ساعة وحدة (1400 دج)" : "زوج سوايع (2700 دج)",
+        id: Date.now(),
+        timestamp: new Date().toLocaleString('ar-DZ'),
+        package: document.querySelector('input[name="package"]:checked').value === "1" ? "ساعة واحدة (1400 دج)" : "ساعتين (2700 دج)",
         fullName: document.getElementById('fullName').value.trim(),
         phone: document.getElementById('phone').value.trim(),
         willaya: document.getElementById('willaya').value,
         baladiya: document.getElementById('baladiya').value.trim(),
-        deliveryMethod: selectedDeliveryMethod === "Stopdesk" ? "مكتب التوصيل (ستوب ديسك)" : "توصيل للمنزل",
-        totalPrice: (currentPackagePrice + currentDeliveryPrice) + " دج"
+        deliveryMethod: selectedDeliveryMethod === "Stopdesk" ? "مكتب التوصيل" : "توصيل للمنزل",
+        deliveryPrice: currentDeliveryPrice + " دج",
+        totalPrice: (currentPackagePrice + currentDeliveryPrice) + " دج",
+        status: "جديدة"
     };
 
-    // Validation (basic)
+    // Validation
     if (!formData.fullName || !formData.phone || !formData.willaya || !formData.baladiya) {
-        showNotification("تعيش عمر كامل المعلومات.", "error");
+        showNotification("عمر كامل المعلومات.", "error");
         return;
     }
 
@@ -215,76 +218,33 @@ async function handleOrderSubmit(e) {
         return;
     }
 
-    if (GOOGLE_SCRIPT_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") {
-        console.log("Mock Submission (Missing Web App URL):", formData);
-        showNotification("تنبيه: رابط Google Sheets غير متصل (شوف Console)", "error");
-
-        // Simulating success for testing UI without real API
-        setTimeout(() => {
-            showNotification("تجربة: سجلنا الطلبية تاعك بنجاح!", "success");
-            e.target.reset();
-            // Reset to default
-            selectPackage(document.querySelector('.package-card'), 1400);
-            selectedWilayaData = null;
-            currentDeliveryPrice = 0;
-            document.getElementById('willaya').value = "";
-            updateDeliveryPricesUI();
-            updateSummary();
-        }, 1500);
-        return;
-    }
-
-    // Prepare UI for loading
+    // Loading state
     btn.disabled = true;
-    btnText.textContent = "جاري المعالجة...";
+    btnText.textContent = "جاري حفظ الطلبية...";
     btnLoader.classList.remove('hidden');
 
-    try {
-        // Build URL with query parameters - most reliable method with Google Apps Script
-        const params = new URLSearchParams({
-            timestamp: formData.timestamp,
-            package: formData.package,
-            fullName: formData.fullName,
-            phone: formData.phone,
-            willaya: formData.willaya,
-            baladiya: formData.baladiya,
-            deliveryMethod: formData.deliveryMethod,
-            totalPrice: formData.totalPrice
-        });
+    // Save to localStorage
+    const orders = JSON.parse(localStorage.getItem('habib_orders') || '[]');
+    orders.unshift(formData);
+    localStorage.setItem('habib_orders', JSON.stringify(orders));
 
-        // Use a hidden image to send data (bypasses CORS entirely)
-        const img = new Image();
-        img.src = GOOGLE_SCRIPT_URL + '?' + params.toString();
+    // Small UX delay
+    await new Promise(resolve => setTimeout(resolve, 800));
 
-        // Also try fetch as backup
-        fetch(GOOGLE_SCRIPT_URL + '?' + params.toString(), {
-            method: 'GET',
-            mode: 'no-cors'
-        });
+    showNotification("سجلنا طلبيتك بنجاح! شكراً على ثقتك ❤️", "success");
+    e.target.reset();
 
-        // Wait 1.5 seconds then show success (no-cors = no response body)
-        await new Promise(resolve => setTimeout(resolve, 1500));
+    // Reset state
+    selectPackage(document.querySelector('.package-card'), 1400);
+    selectedWilayaData = null;
+    currentDeliveryPrice = 0;
+    document.getElementById('willaya').value = "";
+    updateDeliveryPricesUI();
+    updateSummary();
 
-        showNotification("سجلنا الطلبية تاعك بنجاح! درك نعيطولك.", "success");
-        e.target.reset();
-
-        // Reset selections to default
-        selectPackage(document.querySelector('.package-card'), 1400);
-        selectedWilayaData = null;
-        currentDeliveryPrice = 0;
-        document.getElementById('willaya').value = "";
-        updateDeliveryPricesUI();
-        updateSummary();
-
-    } catch (error) {
-        console.error("Submission Error:", error);
-        showNotification("صرى مشكل في الطلبية. عاود سيي.", "error");
-    } finally {
-        // Reset UI
-        btn.disabled = false;
-        btnText.textContent = "تأكيد الطلبية الآن";
-        btnLoader.classList.add('hidden');
-    }
+    btn.disabled = false;
+    btnText.textContent = "تأكيد الطلبية الآن";
+    btnLoader.classList.add('hidden');
 }
 
 // Notification System
