@@ -56,8 +56,10 @@
                     <p>يرجى إدخال معلوماتك لتأكيد الطلبية قبل نفاذ المخزون</p>
                 </div>
 
-                <form id="orderForm">
-                    
+                <form id="orderForm" name="طلبيات" netlify netlify-honeypot="bot-field" method="POST">
+                    <input type="hidden" name="form-name" value="طلبيات">
+                    <p class="hidden"><input name="bot-field"></p>
+
                     <!-- Package Selection -->
                     <div class="form-group">
                         <div class="package-options">
@@ -120,20 +122,8 @@
                     <!-- Delivery Method -->
                     <div class="form-group">
                         <div class="delivery-options" id="deliveryOptionsContainer">
-                            <label class="delivery-card selected" onclick="selectDeliveryMethod(this, 'Stopdesk')">
-                                <input type="radio" name="delivery" value="Stopdesk" checked class="hidden-radio">
-                                <div class="delivery-icon">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-                                </div>
-                                <div class="delivery-info">
-                                    <span class="del-title">مكتب التوصيل</span>
-                                    <span class="del-desc">استلام من نقطة التوقف (ستوب ديسك)</span>
-                                </div>
-                                <span class="del-price" id="stopdeskPriceDisplay">-- دج</span>
-                            </label>
-                            
-                            <label class="delivery-card" onclick="selectDeliveryMethod(this, 'Domicile')">
-                                <input type="radio" name="delivery" value="Domicile" class="hidden-radio">
+                            <label class="delivery-card selected" onclick="selectDeliveryMethod(this, 'Domicile')">
+                                <input type="radio" name="delivery" value="Domicile" checked class="hidden-radio">
                                 <div class="delivery-icon">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
                                 </div>
@@ -142,6 +132,18 @@
                                     <span class="del-desc">توصيل سريع وآمن لدارك</span>
                                 </div>
                                 <span class="del-price" id="domicilePriceDisplay">-- دج</span>
+                            </label>
+                            
+                            <label class="delivery-card" onclick="selectDeliveryMethod(this, 'Stopdesk')">
+                                <input type="radio" name="delivery" value="Stopdesk" class="hidden-radio">
+                                <div class="delivery-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                                </div>
+                                <div class="delivery-info">
+                                    <span class="del-title">مكتب التوصيل</span>
+                                    <span class="del-desc">استلام من نقطة التوقف (ستوب ديسك)</span>
+                                </div>
+                                <span class="del-price" id="stopdeskPriceDisplay">-- دج</span>
                             </label>
                         </div>
                         <p id="deliveryNotAvailableMsg" class="hidden error-msg">عذراً، التوصيل غير متوفر لهذه الولاية.</p>

@@ -64,7 +64,7 @@ const willayasData = [
 let currentPackagePrice = 1400;
 let currentDeliveryPrice = 0; // will be updated when wilaya is selected
 let selectedWilayaData = null;
-let selectedDeliveryMethod = 'Stopdesk'; // default
+let selectedDeliveryMethod = 'Domicile'; // default
 
 // IMPORTANT: Replace this URL with your Google Apps Script Web App URL!
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkfN6DeST9YNBXrQH5XmIXjsetXwmC9xiv76SkbbPuarjySvz8hldhOEcilE9nDXN9ZQ/exec";
@@ -179,7 +179,7 @@ function updateSummary() {
     }
 }
 
-// Form Submission - Save to localStorage
+// Form Submission - Netlify Forms
 async function handleOrderSubmit(e) {
     e.preventDefault();
 
@@ -192,59 +192,75 @@ async function handleOrderSubmit(e) {
         return;
     }
 
-    // Get form data
-    const formData = {
-        id: Date.now(),
-        timestamp: new Date().toLocaleString('ar-DZ'),
-        package: document.querySelector('input[name="package"]:checked').value === "1" ? "ساعة واحدة (1400 دج)" : "ساعتين (2700 دج)",
-        fullName: document.getElementById('fullName').value.trim(),
-        phone: document.getElementById('phone').value.trim(),
-        willaya: document.getElementById('willaya').value,
-        baladiya: document.getElementById('baladiya').value.trim(),
-        deliveryMethod: selectedDeliveryMethod === "Stopdesk" ? "مكتب التوصيل" : "توصيل للمنزل",
-        deliveryPrice: currentDeliveryPrice + " دج",
-        totalPrice: (currentPackagePrice + currentDeliveryPrice) + " دج",
-        status: "جديدة"
-    };
+    const fullName = document.getElementById('fullName').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const willaya = document.getElementById('willaya').value;
+    const baladiya = document.getElementById('baladiya').value.trim();
 
-    // Validation
-    if (!formData.fullName || !formData.phone || !formData.willaya || !formData.baladiya) {
+    if (!fullName || !phone || !willaya || !baladiya) {
         showNotification("عمر كامل المعلومات.", "error");
         return;
     }
 
-    if (formData.phone.length < 9) {
+    if (phone.length < 9) {
         showNotification("رقم الهاتف غالط.", "error");
         return;
     }
 
+    const packageLabel = document.querySelector('input[name="package"]:checked').value === "1"
+        ? "ساعة واحدة (1400 دج)"
+        : "ساعتين (2700 دج)";
+    const deliveryLabel = selectedDeliveryMethod === "Stopdesk" ? "مكتب التوصيل" : "توصيل للمنزل";
+    const totalPrice = (currentPackagePrice + currentDeliveryPrice) + " دج";
+    const deliveryPrice = currentDeliveryPrice + " دج";
+
     // Loading state
     btn.disabled = true;
-    btnText.textContent = "جاري حفظ الطلبية...";
+    btnText.textContent = "جاري إرسال الطلبية...";
     btnLoader.classList.remove('hidden');
 
-    // Save to localStorage
-    const orders = JSON.parse(localStorage.getItem('habib_orders') || '[]');
-    orders.unshift(formData);
-    localStorage.setItem('habib_orders', JSON.stringify(orders));
+    try {
+        // Build FormData for Netlify Forms
+        const formData = new FormData();
+        formData.append("form-name", "طلبيات");
+        formData.append("الاسم_واللقب", fullName);
+        formData.append("رقم_الهاتف", phone);
+        formData.append("الولاية", willaya);
+        formData.append("البلدية", baladiya);
+        formData.append("العرض", packageLabel);
+        formData.append("طريقة_التوصيل", deliveryLabel);
+        formData.append("سعر_التوصيل", deliveryPrice);
+        formData.append("المبلغ_الإجمالي", totalPrice);
+        formData.append("التاريخ", new Date().toLocaleString('ar-DZ'));
 
-    // Small UX delay
-    await new Promise(resolve => setTimeout(resolve, 800));
+        const response = await fetch("/", {
+            method: "POST",
+            body: formData
+        });
 
-    showNotification("سجلنا طلبيتك بنجاح! شكراً على ثقتك ❤️", "success");
-    e.target.reset();
+        if (response.ok) {
+            showNotification("سجلنا طلبيتك بنجاح! شكراً على ثقتك ❤️", "success");
+            e.target.reset();
 
-    // Reset state
-    selectPackage(document.querySelector('.package-card'), 1400);
-    selectedWilayaData = null;
-    currentDeliveryPrice = 0;
-    document.getElementById('willaya').value = "";
-    updateDeliveryPricesUI();
-    updateSummary();
+            // Reset state
+            selectPackage(document.querySelector('.package-card'), 1400);
+            selectedWilayaData = null;
+            currentDeliveryPrice = 0;
+            document.getElementById('willaya').value = "";
+            updateDeliveryPricesUI();
+            updateSummary();
+        } else {
+            throw new Error("Response not ok");
+        }
 
-    btn.disabled = false;
-    btnText.textContent = "تأكيد الطلبية الآن";
-    btnLoader.classList.add('hidden');
+    } catch (error) {
+        console.error("Submission Error:", error);
+        showNotification("صرى مشكل تقني. عاود سيي.", "error");
+    } finally {
+        btn.disabled = false;
+        btnText.textContent = "تأكيد الطلبية الآن";
+        btnLoader.classList.add('hidden');
+    }
 }
 
 // Notification System
