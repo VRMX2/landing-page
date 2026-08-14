@@ -67,7 +67,7 @@ let selectedWilayaData = null;
 let selectedDeliveryMethod = 'Domicile'; // default
 
 // IMPORTANT: Replace this URL with your Google Apps Script Web App URL!
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkfN6DeST9YNBXrQH5XmIXjsetXwmC9xiv76SkbbPuarjySvz8hldhOEcilE9nDXN9ZQ/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyebafZojzxNYMU1kwW3y1EKjxXrFoMcd2OsblkOI_MyLdPIBO30b9aUix0qi1DPFZNaA/exec";
 
 document.addEventListener('DOMContentLoaded', () => {
     // Populate Willayas Dropdown
@@ -219,27 +219,24 @@ async function handleOrderSubmit(e) {
     btnText.textContent = "جاري إرسال الطلبية...";
     btnLoader.classList.remove('hidden');
 
-    // Submit to Netlify Forms using URLSearchParams (most compatible)
+    // Submit to Google Sheets (using GET to avoid CORS issues)
     const params = new URLSearchParams();
-    params.append("form-name", "طلبيات");
-    params.append("الاسم_واللقب", fullName);
-    params.append("رقم_الهاتف", phone);
-    params.append("الولاية", willaya);
-    params.append("البلدية", baladiya);
-    params.append("العرض", packageLabel);
-    params.append("طريقة_التوصيل", deliveryLabel);
-    params.append("سعر_التوصيل", deliveryPrice);
-    params.append("المبلغ_الإجمالي", totalPrice);
-    params.append("التاريخ", new Date().toLocaleString('ar-DZ'));
+    params.append("fullName", fullName);
+    params.append("phone", phone);
+    params.append("willaya", willaya);
+    params.append("baladiya", baladiya);
+    params.append("package", packageLabel);
+    params.append("deliveryMethod", deliveryLabel);
+    params.append("totalPrice", totalPrice);
+    params.append("timestamp", new Date().toLocaleString('ar-DZ'));
 
-    // 1. Send to Netlify Forms (server-side backup)
-    fetch("/", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString()
-    }).catch(() => {});
+    // IMPORTANT: User must replace GOOGLE_SCRIPT_URL with their new Web App URL
+    fetch(`${GOOGLE_SCRIPT_URL}?${params.toString()}`, {
+        method: "GET",
+        mode: "no-cors" // This tells the browser not to block the request
+    }).catch(() => { });
 
-    // 2. Save to localStorage (for local dashboard - orders.html)
+    // Save to localStorage (for local dashboard - orders.html)
     const orderRecord = {
         id: Date.now(),
         timestamp: new Date().toLocaleString('ar-DZ'),

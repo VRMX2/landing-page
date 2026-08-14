@@ -247,6 +247,9 @@
 <div class="notif" id="notif"></div>
 
 <script>
+// IMPORTANT: Replace this with your actual Google Script /exec URL
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyebafZojzxNYMU1kwW3y1EKjxXrFoMcd2OsblkOI_MyLdPIBO30b9aUix0qi1DPFZNaA/exec";
+
 let orders = [];
 let currentOrderId = null;
 let isLoading = false;
@@ -254,64 +257,35 @@ let isLoading = false;
 async function loadOrders() {
     if(isLoading) return;
     
-    const siteId = localStorage.getItem('netlify_site_id');
-    const token = localStorage.getItem('netlify_token');
-
-    if (siteId && token) {
-        // Fetch from Netlify API
-        isLoading = true;
-        document.getElementById('syncStatus').textContent = "🔄 جاري المزامنة مع Netlify...";
+    isLoading = true;
+    document.getElementById('syncStatus').textContent = "🔄 جاري جلب الطلبيات من Google Sheets...";
+    
+    try {
+        const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=getOrders`);
+        const data = await response.json();
         
-        try {
-            // 1. Get forms for site
-            const formsRes = await fetch(`https://api.netlify.com/api/v1/sites/${siteId}/forms`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if(!formsRes.ok) throw new Error("بيانات الربط غالطة");
-            const forms = await formsRes.json();
-            const targetForm = forms.find(f => f.name === 'طلبيات');
+        if (data.result === 'success' && data.orders) {
+            // Merge with local status
+            orders = data.orders.map(o => ({
+                ...o,
+                status: localStorage.getItem(`status_${o.id}`) || 'جديدة'
+            }));
             
-            if (targetForm) {
-                // 2. Get submissions
-                const subsRes = await fetch(`https://api.netlify.com/api/v1/forms/${targetForm.id}/submissions`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const submissions = await subsRes.json();
-                
-                // Parse submissions to our format
-                orders = submissions.map(sub => {
-                    const d = sub.data;
-                    return {
-                        id: sub.id,
-                        timestamp: d['التاريخ'] || new Date(sub.created_at).toLocaleString('ar-DZ'),
-                        fullName: d['الاسم_واللقب'] || '',
-                        phone: d['رقم_الهاتف'] || '',
-                        willaya: d['الولاية'] || '',
-                        baladiya: d['البلدية'] || '',
-                        package: d['العرض'] || '',
-                        deliveryMethod: d['طريقة_التوصيل'] || '',
-                        deliveryPrice: d['سعر_التوصيل'] || '',
-                        totalPrice: d['المبلغ_الإجمالي'] || '',
-                        status: localStorage.getItem(`status_${sub.id}`) || 'جديدة'
-                    };
-                });
-                document.getElementById('syncStatus').textContent = "🟢 متصل بـ Netlify";
-            } else {
-                throw new Error("لم يتم العثور على فورم 'طلبيات'");
-            }
-        } catch(err) {
-            console.error(err);
-            document.getElementById('syncStatus').textContent = "🔴 خطأ في الإتصال";
-            // Fallback to local
-            orders = JSON.parse(localStorage.getItem('habib_orders') || '[]');
+            document.getElementById('syncStatus').textContent = "🟢 متصل بقاعدة البيانات";
+            
+            // Backup to local storage just in case
+            localStorage.setItem('habib_orders', JSON.stringify(orders));
+        } else {
+            throw new Error("خطأ في البيانات");
         }
-        isLoading = false;
-    } else {
-        // Fetch from LocalStorage only
+    } catch(err) {
+        console.error("Fetch Error:", err);
+        document.getElementById('syncStatus').textContent = "🔴 خطأ في الإتصال (بيانات محلية)";
+        // Fallback to local
         orders = JSON.parse(localStorage.getItem('habib_orders') || '[]');
-        document.getElementById('syncStatus').textContent = "(بيانات محلية فقط)";
     }
     
+    isLoading = false;
     renderTable();
     renderStats();
 }

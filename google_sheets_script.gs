@@ -13,6 +13,39 @@ function doGet(e) {
       sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet("Commandes");
     }
     
+    // --- READ ORDERS (For Dashboard) ---
+    if (params.action === 'getOrders') {
+      var data = sheet.getDataRange().getValues();
+      var orders = [];
+      
+      if (data.length > 1) {
+        var headers = data[0];
+        for(var i = 1; i < data.length; i++) {
+          var row = data[i];
+          if (!row[0]) continue;
+          
+          var order = {
+            id: i,
+            timestamp: row[0],
+            package: row[1],
+            fullName: row[2],
+            phone: row[3],
+            willaya: row[4],
+            baladiya: row[5],
+            deliveryMethod: row[6],
+            totalPrice: row[7]
+          };
+          orders.push(order);
+        }
+        orders.reverse(); // Newest first
+      }
+      
+      return ContentService
+        .createTextOutput(JSON.stringify({"result": "success", "orders": orders}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // --- INSERT NEW ORDER (From Landing Page) ---
     // Add headers if empty
     if (sheet.getLastRow() === 0) {
       sheet.appendRow(["التاريخ", "العرض", "الاسم واللقب", "الهاتف", "الولاية", "البلدية", "التوصيل", "السعر الإجمالي"]);
