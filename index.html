@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الساعة الفاخرة | حصرياً</title>
+    <meta name="description" content="أشري الساعة تاعنا. جودة عالية وتصميم عصري. التوصيل متوفر لـ 58 ولاية.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="notification" id="notification"></div>
+    
+    <div class="brand-header">
+        <div class="logo">حبيب <span>الزوالي</span></div>
+    </div>
+
+    <div class="container fade-in">
+        <!-- Hero Section / Product Presentation -->
+        <header class="product-hero">
+            <div class="hero-text">
+                <span class="badge-premium">إصدار محدود 🔥</span>
+                <h1 class="main-title">الأناقة في معصمك</h1>
+                <p class="subtitle">تصميم سويسري عصري يبرز شخصيتك الاستثنائية. الكمية المتبقية محدودة جداً!</p>
+            </div>
+            
+            <div class="image-gallery">
+                <div class="main-image-container glow-effect">
+                    <img src="photo_5936053744548122362_y.jpg" alt="ساعة فخمة" id="main-image">
+                </div>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <span>ضمان الجودة</span>
+                </div>
+                <div class="feature">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    <span>دقة عالية</span>
+                </div>
+                <div class="feature">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10.04 10.04 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+                    <span>دفع آمن</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Order Form Section -->
+        <section class="order-section">
+            <div class="glass-panel">
+                <div class="panel-header">
+                    <h2>أكمل طلبك الآن</h2>
+                    <p>يرجى إدخال معلوماتك لتأكيد الطلبية قبل نفاذ المخزون</p>
+                </div>
+
+                <form id="orderForm">
+                    
+                    <!-- Package Selection -->
+                    <div class="form-group">
+                        <div class="package-options">
+                            <label class="package-card selected" onclick="selectPackage(this, 1400)">
+                                <input type="radio" name="package" value="1" checked class="hidden-radio">
+                                <div class="pkg-content">
+                                    <div class="pkg-info">
+                                        <span class="pkg-title">ساعة واحدة</span>
+                                    </div>
+                                    <span class="pkg-price">1400 دج</span>
+                                </div>
+                                <div class="check-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+                            </label>
+
+                            <label class="package-card" onclick="selectPackage(this, 2700)">
+                                <input type="radio" name="package" value="2" class="hidden-radio">
+                                <span class="pkg-badge">وفر 100 دج</span>
+                                <div class="pkg-content">
+                                    <div class="pkg-info">
+                                        <span class="pkg-title">ساعتين</span>
+                                        <span class="pkg-desc">هدية مثالية لك ولصديقك</span>
+                                    </div>
+                                    <span class="pkg-price">2700 دج</span>
+                                </div>
+                                <div class="check-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Personal Information -->
+                    <div class="form-group">
+                        <div class="form-row">
+                            <div class="input-container">
+                                <input type="text" id="fullName" name="fullName" placeholder=" " required>
+                                <label for="fullName" class="floating-label">الاسم و اللقب</label>
+                            </div>
+                            <div class="input-container">
+                                <input type="tel" id="phone" name="phone" placeholder=" " required dir="ltr">
+                                <label for="phone" class="floating-label" style="right: 16px; left: auto;">رقم الهاتف</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Address Information -->
+                    <div class="form-group">
+                        <div class="form-row">
+                            <div class="input-container select-container">
+                                <select id="willaya" name="willaya" required>
+                                    <option value="" disabled selected>اختر الولاية</option>
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                            <div class="input-container">
+                                <input type="text" id="baladiya" name="baladiya" placeholder=" " required>
+                                <label for="baladiya" class="floating-label">البلدية</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Delivery Method -->
+                    <div class="form-group">
+                        <div class="delivery-options" id="deliveryOptionsContainer">
+                            <label class="delivery-card selected" onclick="selectDeliveryMethod(this, 'Stopdesk')">
+                                <input type="radio" name="delivery" value="Stopdesk" checked class="hidden-radio">
+                                <div class="delivery-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                                </div>
+                                <div class="delivery-info">
+                                    <span class="del-title">مكتب التوصيل</span>
+                                    <span class="del-desc">استلام من نقطة التوقف (ستوب ديسك)</span>
+                                </div>
+                                <span class="del-price" id="stopdeskPriceDisplay">-- دج</span>
+                            </label>
+                            
+                            <label class="delivery-card" onclick="selectDeliveryMethod(this, 'Domicile')">
+                                <input type="radio" name="delivery" value="Domicile" class="hidden-radio">
+                                <div class="delivery-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                                </div>
+                                <div class="delivery-info">
+                                    <span class="del-title">إلى باب المنزل</span>
+                                    <span class="del-desc">توصيل سريع وآمن لدارك</span>
+                                </div>
+                                <span class="del-price" id="domicilePriceDisplay">-- دج</span>
+                            </label>
+                        </div>
+                        <p id="deliveryNotAvailableMsg" class="hidden error-msg">عذراً، التوصيل غير متوفر لهذه الولاية.</p>
+                    </div>
+
+                    <!-- Summary & Submit -->
+                    <div class="order-summary-box">
+                        <div class="summary-row">
+                            <span>السعر (المنتج)</span>
+                            <span id="subtotalDisplay">1400 دج</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>تكلفة التوصيل</span>
+                            <span id="deliveryDisplay">-- دج</span>
+                        </div>
+                        <div class="summary-divider"></div>
+                        <div class="summary-row total-row">
+                            <span>الإجمالي</span>
+                            <span id="totalDisplay">-- دج</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="btn-premium">
+                        <span class="btn-text">تأكيد الطلبية الآن</span>
+                        <span class="btn-loader hidden"></span>
+                    </button>
+
+                    <div class="secure-footer">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <span>الدفع نقداً عند الاستلام 100% آمن</span>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <!-- Sticky Button for Mobile -->
+    <button id="stickyBuyBtn" class="btn-premium sticky-buy-btn" onclick="scrollToForm()">
+        <span class="btn-text">أشري درك</span>
+    </button>
+
+    <script src="script.js"></script>
+</body>
+</html>
